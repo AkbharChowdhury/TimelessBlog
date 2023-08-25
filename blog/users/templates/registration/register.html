@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Timeless blog Register{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <h1 class="text-capitalize text-primary">Register</h1>
+    <hr>
+    <form class="row g-3" action="" method="post">
+        {% csrf_token %}
+          <h3 class="text-capitalize">personal details</h3>
+        <div class="col-md-6">
+            <label for="first_name" class="form-label text-capitalize">first name</label>
+            <input type="text" class="form-control" maxlength="{{ form.first_name.field.max_length }}" name="first_name" id="first_name" autofocus placeholder="enter your firstname" value="{{ request.POST.first_name }}">
+            <small class="form text-danger mt-5">{{ form.first_name.errors }}</small>
+        </div>
+        <div class="col-md-6">
+            <label for="last_name"  class="form-label text-capitalize">last name</label>
+            <input type="text" class="form-control" name="last_name" maxlength="{{ form.last_name.field.max_length }}" id="last_name" placeholder="enter your last name" value="{{ request.POST.last_name }}">
+            <small class="form text-danger mt-5">{{ form.last_name.errors }}</small>
+        </div>
+        <h3 class="text-capitalize">account details</h3>
+        <hr>
+        <div class="col-12">
+            <label for="username" class="form-label text-capitalize">username {{ form.username.help_text }}</label>
+            <input type="text" class="form-control" name="username" id="username" maxlength="{{ form.username.field.max_length }}" placeholder="enter your username" value="{{ request.POST.username }}">
+            <small class="form text-danger mt-5">{{ form.username.errors }}</small>
+        </div>
+        <div class="col-12">
+            <label for="email" class="form-label text-capitalize">email</label>
+            <input type="text" class="form-control" name="email" id="email" placeholder="enter your email" value="{{ request.POST.email }}">
+            <small class="form text-danger mt-5">{{ form.email.errors }}</small>
+        </div>
+        <div class="col-12">
+            <label for="password1" class="form-label text-capitalize">password</label>
+            <input type="password" maxlength="30" class="form-control" maxlength="{{ form.password1.field.max_length }}" name="password1" id="password1" placeholder="enter your password">
+            <small class="form text-danger mt-5">{{ form.password1.errors }}</small>
+
+             <div class="mt-3">
+                <ul>
+                    <li>Your password can’t be too similar to your other personal information.</li>
+                    <li>Your password must contain at least 8 characters.</li>
+                    <li>Your password can’t be a commonly used password.</li>
+                    <li>Your password can’t be entirely numeric.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-12">
+            <label for="password2" class="form-label text-capitalize">confirm password</label>
+            <input type="password" maxlength="30" class="form-control" name="password2" id="password2"  maxlength="{{ form.password1.field.max_length }}" placeholder="confirm password">
+            <small class="form text-danger mt-5">{{ form.password2.errors }}</small>
+
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary text-capitalize">register</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

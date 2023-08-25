@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}User profile{% endblock %}
+{% load humanize %}
+{% block active_menu_link %}user_profile{% endblock %}
+{% block content %}
+    <section class="container py-4" id="user-profile">
+        <div class="card mb-3" >
+            <div class="row g-0">
+                <div class="col-md-2">
+                    {% if page_user.profile_pic  %}
+                        <img src="{{ page_user.profile_pic.url }}" class="img-fluid rounded-start fill-image" alt="...">
+                    {% else %}
+                        <img src="{% static 'images/user-avatar.svg.png' %}" class="img-fluid rounded-start fill-image" alt="...">
+                    {% endif %}
+                </div>
+                <div class="col-md-10 ">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ page_user.user.first_name }} {{ page_user.user.last_name }}</h5>
+                        <p class="text-muted">
+                            <small class="text-capitalize">
+                            {% if page_user.facebook_url %}
+                                <a href="{{ article.author.profile.facebook_url }}">facebook</a> |
+                            {% endif %}
+                            {% if page_user.instagram_url %}
+                                <a href="{{ article.author.profile.instagram_url }}">instagram</a> |
+                            {% endif %}
+                            {% if page_user.twitter_url %}
+                                <a href="{{ article.author.profile.twitter_url }}">twitter</a> |
+                            {% endif %}
+                            {% if page_user.pinterest_url %}
+                                <a href="{{ article.author.profile.pinterest_url }}">pinterest</a> |
+                            {% endif %}
+                            </small>
+                        </p>
+                        <p class="card-text">{{ page_user.bio }}</p>
+                        <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

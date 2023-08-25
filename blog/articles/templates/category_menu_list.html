@@ -1,0 +1,37 @@
+<script>
+    function goTo(link){
+        window.location.href = link
+    }
+</script>
+{% extends 'base.html' %}
+{% block title %}Categories{% endblock title %}
+
+{% block content %}
+<div class="container py-5">
+  <h1 class="text-primary">Categories</h1>
+    <hr>
+  <div class="container">
+    <div class="row">
+        {% for category in category_menu_list %}
+       <div class="col-md-3">
+                         {% autoescape off %}
+
+        <label class="custom-radio-button__container" for="{{ category.id }}">
+                            {% endautoescape %}
+
+          <input type="radio" name="category"  id="{{ category.id }}" value="{% url 'category' category.name|slugify %}" onclick="goTo(this.value)">
+          <span class="custom-radio-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" fill="currentColor" class="{{ category.css_class }}" viewBox="0 0 16 16">
+              {% autoescape off %}
+                {{ category.path_d }}
+                {% endautoescape %}
+            </svg>
+             {{ category.name }}
+          </span>
+        </label>
+      </div>
+      {% endfor %}
+  </div>
+</div>
+
+{% endblock content %}

@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ article.title_tag }}{% endblock %}
+{% block content %}
+    <div class="container mt-5">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ article.title }}</li>
+            </ol>
+        </nav>
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Post content-->
+                <article>
+                    <!-- Post header-->
+                    <header class="mb-4">
+                        <!-- Post title-->
+                        <h1 class="fw-bolder mb-1">{{ article.title }}</h1>
+                        <div class="h4 pb-2 mb-4 text-danger border-bottom border-warning"></div>
+                        <!-- Post meta content-->
+                        <div class="text-muted fst-italic mb-2">Posted on {{ article.publication_date }} by {{ article.author.first_name }} {{ article.author.last_name }}</div>
+                        <!-- Article categories-->
+                        <span class="badge text-bg-warning mb-2"><a href="{% url 'category' article.category|slugify %}" class="text-reset text-decoration-none">{{ article.category.name }}</a></span>
+                        <form action="" method="post">
+                            <input type="hidden" name="article" value="{{ article.id }}">
+                            {% csrf_token %}
+                            {% if user.is_authenticated %}
+                                {% if liked %}
+                                    <button name="btn_toggle_like" class="hide-submit-btn" type="submit"  value="{{ article.id }}">
+                                    <i class="fa-regular fa-heart fa-lg" aria-hidden="true"></i>
+                                    </button>
+                                {% else %}
+                                    <button name="btn_toggle_like" class="hide-submit-btn" type="submit" value="{{ article.id }}">
+                                    <i class="fa-solid fa-heart fa-lg" aria-hidden="true"></i>
+                                    </button>
+                                {% endif %}
+                            {% else %}
+                                <small class="text-muted">Login to like </small>
+                            {% endif %}
+                            {{ total_likes }}
+                        </form>
+                        {% if user.is_authenticated and user.id == article.author.id  %}
+                            <p class="mt-3"><a class="btn btn-outline-primary" href="{% url 'edit_article' article.pk %}">Edit</a>
+                            <a class="btn btn-outline-danger" role="button"  href="{% url 'delete_article' article.pk %}">Delete</a></p>
+                        {% endif %}
+                    </header>
+                    <!-- Preview image figure-->
+                    {% if article.image  %}
+                        <figure class="mb-4">
+                            <img class="img-fluid rounded" src="{{ article.image.url }}" alt="ggg" />
+                        </figure>
+                    {% endif %}
+                    <!-- Post content-->
+                    <section class="mb-5">
+                        <p class="fs-5 mb-4">{{ article.body| safe}}</p>
+                    </section>
+                </article>
+            </div>
+            {% include 'includes/sidebar.html' %}
+        </div>
+        <div class="card mb-3" >
+            <div class="row g-0">
+                <div class="col-md-2">
+                    {% if article.author.profile.profile_pic.url is not None %}
+                        <img src="{{ article.author.profile.profile_pic.url }}" class="img-fluid rounded-start fill-image" alt="...">
+                    {% else %}
+                        <img src="{% static 'images/user-avatar.svg.png' %}" class="img-fluid rounded-start fill-image" alt="...">
+                    {% endif %}
+                </div>
+                <div class="col-md-10 ">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ article.author.first_name }} {{ article.author.last_name }}</h5>
+                        {% if article.author.profile.id %}
+                            <p><a href="{% url 'show_profile_page' article.author.profile.id %}">view  {{ article.author.first_name }} {{ article.author.last_name }}'s profile</a></p>
+                        {% endif %}
+                        <p class="text-muted">
+                            <small class="text-capitalize">
+                            {% if article.author.profile.facebook_url %}
+                                <a href="{{ article.author.profile.facebook_url }}">facebook</a> |
+                            {% endif %}
+                            {% if article.author.profile.instagram_url %}
+                                <a href="{{ article.author.profile.instagram_url }}">instagram</a> |
+                            {% endif %}
+                            {% if article.author.profile.twitter_url %}
+                                <a href="{{ article.author.profile.twitter_url }}">twitter</a> |
+                            {% endif %}
+                            {% if article.author.profile.pinterest_url %}
+                                <a href="{{ article.author.profile.pinterest_url }}">pinterest</a> |
+                            {% endif %}
+                            </small>
+                        </p>
+                        <p class="card-text">{{ article.author.profile.bio }}</p>
+                        <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <h2>Comments</h2>
+        <!-- Comments section-->
+        <section class="mb-5" id="comments">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <!-- Comment form-->
+                    <form class="mb-4 needs-validation" action="" method="post" id="commentForm" novalidate >
+                        <div id="errors"></div>
+                        {% for message in messages %}
+                            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}success{% endif %} alert-dismissible  d-flex align-items-center fade show" role="alert">
+                        <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Success:"><use xlink:href="#check-circle-fill"/></svg>
+                        <div>
+                            {{ message }}
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+                {% csrf_token %}
+                <input type="hidden" name="article" value="{{ article.id }}">
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="name" name="name" placeholder="name" required value="{{ name }}">
+                    <div class="invalid-feedback">name is required</div>
+                    <label for="name">Name</label>
+                </div>
+                <div class="form-floating">
+                    <textarea class="form-control" placeholder="Leave a comment here" id="body" name="body" rows="6" cols="30" required>{{ request.POST.body }}</textarea>
+                    <div class="invalid-feedback">body is required</div>
+                    <label for="body">Comments</label>
+                </div>
+                <div class="mt-3">
+                    <button type="submit" name="btn_add_comment" class="btn btn-warning">post comment</button>
+                </div>
+            </form>
+            <!-- Comment with nested comments-->
+            <div class="d-flex mb-4">
+                <!-- Single comment-->
+                {% for comment in article.comments.all %}
+                    {% if forloop.first %}
+                        <!-- Parent comment-->
+                        <div class="flex-shrink-0">
+                            <img class="rounded-circle"
+                            src="https://dummyimage.com/50x50/ced4da/6c757d.jpg" alt="..." />
+                        </div>
+                        <div class="ms-3">
+                            <div class="fw-bold">
+                                {{ comment.name|title  }} | {{ comment.date_added }}
+                            </div>
+                            {{ comment.body }}
+                            <!-- Child comment 1-->
+                            <!--                                <div class="d-flex mt-4">-->
+                            <!--                                    <div class="flex-shrink-0">-->
+                            <!--                                        <img class="rounded-circle" src="https://dummyimage.com/50x50/ced4da/6c757d.jpg" alt="..." /></div>-->
+                            <!--                                    <div class="ms-3">-->
+                            <!--                                        <div class="fw-bold">Commenter Name</div>-->
+                            <!--                                        And under those conditions, you cannot establish a capital-market evaluation-->
+                            <!--                                        of that enterprise. You can't get investors.-->
+                            <!--                                    </div>-->
+                            <!--                                </div>-->
+                            <!-- Child comment 2-->
+                            <!--                                <div class="d-flex mt-4">-->
+                            <!--                                    <div class="flex-shrink-0"><img class="rounded-circle"-->
+                            <!--                                    src="https://dummyimage.com/50x50/ced4da/6c757d.jpg" alt="..." /></div>-->
+                            <!--                                    <div class="ms-3">-->
+                            <!--                                        <div class="fw-bold">Commenter Name</div>-->
+                            <!--                                        When you put money directly to a problem, it makes a good headline.-->
+                            <!--                                    </div>-->
+                            <!--                                </div>-->
+                        </div>
+                        </div> <!--   first comment -->
+                    {% else %}
+                        <div class="d-flex mb-4">
+                            <div class="flex-shrink-0"><img class="rounded-circle"
+                            src="https://dummyimage.com/50x50/ced4da/6c757d.jpg" alt="..." /></div>
+                            <div class="ms-3">
+                                <div class="fw-bold">{{ comment.name }} | {{ comment.date_added }} </div>
+                                {{ comment.body }}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    <hr>
+    {% if not article.comments.all %}
+        <p class="text-muted">no comments... <a href="{% url 'create_comment' article.pk %}" style="color:#FF8C00">be the first to comment</a></p>
+    {% else %}
+        <a href="{% url 'create_comment' article.pk %}" style="color:#FF8C00">add comment</a> <br>
+        {% for comment in article.comments.all %}
+            <strong>{{ comment.name }} {{ comment.date_added }}</strong>
+            <br>
+            {{ comment.body }}
+            <br>
+        {% endfor %}
+    {% endif %}
+</div>
+{% endblock %}
+{% block scripts  %}
+<script src="{% static 'js/commentForm.js' %}"></script>
+{% endblock  %}

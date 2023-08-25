@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Dekete blog post{% endblock title %}
+
+{% block content %}
+
+<div class="container py-4">
+    {% if user.is_authenticated and user.id == article.author.id %}
+
+    <h1 class="text-capitalize">Delete post</h1>
+    <h3>Delete  {{ article.title }}</h3>
+    <div class="row">
+        <strong>Are you sure you want to delete this blog?</strong>
+            <div class="col-xs-12 mt-3">
+                <div  class="left">
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger text-capitalize m-3">Yes</button>
+                        <a class="btn btn-secondary text-capitalize" href="{% url 'home' %}" role="button">cancel</a>
+                        </form>
+                </div>
+            </div>
+        </div>
+    {% else %}
+    <div class="alert alert-danger d-flex align-items-center" role="alert">
+  <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>
+  <div>
+    Error! you must <a href="{ url 'login'}" class="alert-link">Login</a> to delete a blog
+  </div>
+</div>
+    {% endif %}
+</div>
+{% endblock content %}

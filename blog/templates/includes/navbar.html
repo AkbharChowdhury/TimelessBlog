@@ -1,0 +1,76 @@
+<nav class="navbar navbar-expand-lg bg-light sticky-top">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="{% url 'home' %}">
+      <img src="/static/logo.png" alt="logo" width="40" height="40" class="d-inline-block align-bottom">
+      <span class="text-capitalize">
+        <span class="nav-brand-text">Timeless </span>
+        <span class="text-primary">blog</span>
+      </span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.view_name == 'home' %}active{% endif %}" aria-current="page" href="{% url 'home' %}">Home</a>
+        </li>
+        {% if user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.view_name == 'create_article' %}active{% endif %}" href="{% url 'create_article' %}">Create Post</a>
+          </li>
+        <li class="nav-item">
+            <a class="nav-link text-capitalize {% if request.resolver_match.view_name == 'create_category' %}active{% endif %}" href="{% url 'create_category' %}">Create category</a>
+
+          </li>
+
+        {% endif %}
+
+        {% if category_menu %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Categories
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="category_nav_dropdown">
+            {% for item in category_menu %}
+              <li><a class="dropdown-item" href="{% url 'category' item|slugify %}">{{ item }}</a></li>
+            {% endfor %}
+          </ul>
+        </li>
+        {% else %}
+
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.view_name == 'category_list' %}active{% endif %}"
+              href="{% url 'category_list' %}">Categories</a>
+        </li>
+        {% endif %}
+
+      </ul>
+        <ul class="navbar-nav ml-auto mb-2 mb-lg-0">
+          {% if not user.is_authenticated %}
+              <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.view_name == 'login' %}active{% endif %}" aria-current="page" href="{% url 'login' %}">Login</a>
+              </li>
+               <button type="button" class="btn btn-primary" onclick="location.href='{% url 'register' %}'">Register</button>
+          {% else %}
+             <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              {% if user.first_name and user.last_name is not None %} {{ user.first_name }} {{ user.last_name }} {% endif %}
+          </a>
+          <ul class="dropdown-menu text-capitalize" aria-labelledby="navbarDropdown">
+            <li><a class="dropdown-item {% if request.resolver_match.view_name == 'edit_profile' %}active{% endif %}" href="{% url 'edit_profile' %}">edit settings</a></li>
+            {% if user.profile.id %}
+              <li><a class="dropdown-item {% if request.resolver_match.view_name == 'edit_profile_page' %}active{% endif %}" href="{% url 'edit_profile_page' user.profile.id  %}">edit profile page</a></li>
+              <li><a class="dropdown-item {% if request.resolver_match.view_name == 'show_profile_page' %}active{% endif %}" href="{% url 'show_profile_page' user.profile.id %}">show profile page</a></li>
+            {% else %}
+                <li><a class="dropdown-item" href=" {% url 'create_profile_page' %} ">create profile page</a></li>
+            {% endif %}
+          </ul>
+        </li>
+            <button type="button" class="btn btn-primary ml-2" onclick="location.href='{% url 'logout' %}'">Logout</button>
+        {% endif %}
+        </ul>
+
+    </div>
+  </div>
+</nav>

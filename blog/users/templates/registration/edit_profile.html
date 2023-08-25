@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Edit profile {% endblock %}
+
+{% block content %}
+
+<div class="container py-5">
+    <h1 class="text-capitalize text-primary">edit settings</h1>
+    <hr>
+    <div class="form-group">
+        <form action="" method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary text-capitalize">update profile</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

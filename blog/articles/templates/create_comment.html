@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}add comment{% endblock %}
+{% block content %}
+<div class="container">
+        {{ article.id }}
+        <h1 class="text-capitalize">add comment</h1>
+        <div class="form-group">
+            <form action="" method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-primary text-capitalize">add comment</button>
+            </form>
+        </div>
+
+</div>
+{% endblock content %}

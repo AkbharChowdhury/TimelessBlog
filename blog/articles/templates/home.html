@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% block title %}Timeless Blog - view latest articles{% endblock title %}
+{% load humanize %}
+{% block active_menu_link %}active{% endblock %}
+{% block content %}
+{% if request.GET.title %}
+
+    <h1>the value of title is {{ request.GET.title }} and category {{ request.GET.category }}</h1>
+
+{% endif %}
+
+
+
+
+<div id="home">
+    <div class="landing-text text-center text-white">
+        <h1 class="text-uppercase">timeless blog</h1>
+        <div class="border-bottom border-3 border-light custom-border"></div>
+        <h3>share your experiences</h3>
+        <a href="#features-icons" class="btn btn-outline-light btn-lg custom-btn">Get started</a>
+    </div>
+</div>
+<section id="articles" class="bg-light pb-2">
+    <div class="container-lg">
+        <div class="text-start pt-3">
+            <h2 class="text-primary text-capitalize">Articles</h2>
+            <hr>
+            <form class="d-flex mb-3" role="search">
+                <input class="form-control me-2" type="search" placeholder="Search article title..." aria-label="Search" name="title" autofocus value='{{ request.GET.title }}'>
+                <input type="hidden" id="category_id" value="{{ request.GET.category }}">
+                <select class="form-select form-select-sm me-2" aria-label="category search" name="category" id="category">
+                    <option value="">Any category</option>
+                    {% for item in category_menu %}
+                        <option value="{{ item.id }}" >{{ item }}</option>
+                    {% endfor %}
+                </select>
+                <button class="btn btn-primary" type="submit">Search</button>
+            </form>
+            <p class="text-muted">
+                {% if  total_records %}
+                         {{ total_records }} result{{ total_records|pluralize }}
+                {% endif %}
+            </p>
+        </div>
+        <div class="row g-3">
+            {% for article in object_list %}
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card h-100">
+                        {% if article.image  %}
+                            <img class="card-img-top card-image" src="{{ article.image.url }}" alt="article image">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ article.title }}</h5>
+                            <p class="text-muted"><a href="#" class="text-reset text-decoration-none text-capitalize">{{ article.author.first_name }}  {{ article.author.last_name }} </a> | {{ article.publication_date|naturalday }}
+                            <br>
+                            <span class="badge text-bg-warning"><a href="{% url 'category' article.category|slugify %}" class="text-reset text-decoration-none">{{ article.category.name }}</a></span>
+                        </p>
+                        <p class="card-text">{{ article.snippet}}</p>
+                        <a href="{% url 'article_detail' article.pk %}" class="btn btn-warning text-capitalize" role="button">view</a>
+                        {% if user.is_authenticated and user.id == article.author.id  %}
+                            <div class="pt-2">
+                                <a href="{% url 'edit_article' article.pk %}" class="btn btn-outline-primary text-capitalize" role="button">edit</a>
+                                <a href="{% url 'delete_article' article.pk %}" class="btn btn-outline-danger text-capitalize" role="button">delete</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+                <div class="alert alert-danger d-flex align-items-center" role="alert">
+                <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>
+                <div>
+                    Whoops! it seems that there are no blogs
+                </div>
+        {% endfor %}
+    </div>
+</div>
+</div><!-- end container -->
+</section>
+{% if is_paginated %}
+<section id="article-pagination" class="container mt-3">
+    <nav aria-label="article pagination">
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+                <!-- If it is not a search result display, don't append the search query
+                to the URL. -->
+                {% if not search %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}&title={{ request.GET.title }}&category={{ request.GET.category }}" tabindex="-1">Previous</a>
+                    </li>
+                {% else %}
+                    <!-- Append the searched query to the URL, so that on a search results page,
+                    the pagination don't revert to listing all the listview items. -->
+                    <li class="page-item">
+                        <a class="page-link" href="?{{ search }}&page={{ page_obj.previous_page_number }}&title={{ request.GET.title }}&category={{ request.GET.category }}" tabindex="-1">Previous</a>
+                    </li>
+                {% endif %}
+            {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link">Previous</a>
+                </li>
+            {% endif %}
+            {% for page in page_obj.paginator.page_range %}
+                <li class="page-item">
+                    <a class="page-link
+                        {% if page_obj.number == page %} active {% endif %}"
+                        aria-current="page"
+                        href="?page={{ forloop.counter }}&title={{ request.GET.title }}&category={{ request.GET.category }}">{{ forloop.counter }}
+                    </a>
+                </li>
+                {% if page_obj.has_next %}
+                    <li>
+                        <a href="?page={{i}}">{{i}}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+                {% if not search %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}&title={{ request.GET.title }}&category={{ request.GET.category }}">Next </a>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{{search}}&page={{ page_obj.next_page_number }}&title={{ request.GET.title }}&category={{ request.GET.category }}">Next</a>
+                    </li>
+                {% endif %}
+            {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link">Next</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+</section>
+{% endif %}
+
+{% endblock %}
+{% block scripts %}
+    <script>
+        let category_id = document.querySelector('#category_id').value;
+        document.getElementById("category").value = category_id;
+    </script>
+{% endblock %}

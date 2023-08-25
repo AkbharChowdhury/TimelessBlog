@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}create a new profile page{% endblock %}
+{% block content %}
+<div class="container py-5">
+    {% if user.is_authenticated %}
+        <h1 class="text-capitalize">Create profile page</h1>
+        <div class="form-group">
+            <form action="" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-primary text-capitalize">Create profile page</button>
+            </form>
+        </div>
+    {% else %}
+        <div class="alert alert-danger d-flex align-items-center" role="alert">
+            <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>
+            <div>
+                Error! you must <a href="{ url 'login'}" class="alert-link">Login</a> to create a post
+            </div>
+    </div>
+{% endif %}
+</div>
+{% endblock content %}
