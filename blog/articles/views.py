@@ -118,6 +118,7 @@ class ArticleDetails(DetailView):
         context['category_menu'] = Category.objects.all()
         context['total_likes'] = article_likes.total_likes()
         context['liked'] = liked
+        context['liked_icon'] = 'fa-regular' if liked else 'fa-solid'
 
         return context
 
