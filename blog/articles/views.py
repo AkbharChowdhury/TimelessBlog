@@ -117,7 +117,6 @@ class ArticleDetails(DetailView):
         liked = False if article_likes.likes.filter(id=self.request.user.id).exists() else True
         context['category_menu'] = Category.objects.all()
         context['total_likes'] = article_likes.total_likes()
-        context['liked'] = liked
         context['liked_icon'] = 'fa-regular' if liked else 'fa-solid'
 
         return context
