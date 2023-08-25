@@ -63,9 +63,9 @@
             <div class="row g-0">
                 <div class="col-md-2">
                     {% if article.author.profile.profile_pic.url is not None %}
-                        <img src="{{ article.author.profile.profile_pic.url }}" class="img-fluid rounded-start fill-image" alt="...">
+                        <img src="{{ article.author.profile.profile_pic.url }}" class="img-fluid rounded-start fill-image" alt="{{ article.author.first_name }} {{ article.author.last_name }}'s profile image">
                     {% else %}
-                        <img src="{% static 'images/user-avatar.svg.png' %}" class="img-fluid rounded-start fill-image" alt="...">
+                        <img src="{% static 'images/user-avatar.svg.png' %}" class="img-fluid rounded-start fill-image" alt="default image">
                     {% endif %}
                 </div>
                 <div class="col-md-10 ">
