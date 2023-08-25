@@ -118,7 +118,9 @@ class ArticleDetails(DetailView):
         context['category_menu'] = Category.objects.all()
         context['total_likes'] = article_likes.total_likes()
         context['liked_icon'] = 'fa-regular' if liked else 'fa-solid'
-
+        context['liked'] = liked
+        article = get_object_or_404(self.model, pk=self.kwargs['pk'])
+        context['author'] = f'{article.author.first_name} {article.author.last_name}'.title()
         return context
 
 

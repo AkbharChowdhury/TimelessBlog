@@ -1,8 +1,8 @@
+from ckeditor.fields import RichTextField
 from django.contrib.auth.models import User
 from django.db import models
 from django.urls import reverse
 from django.utils.html import mark_safe
-from ckeditor.fields import RichTextField
 
 
 class Profile(models.Model):
@@ -65,6 +65,9 @@ class Article(models.Model):
     def get_absolute_url(self):
         # return reverse('article_detail', args=str(self.id))
         return reverse('home')
+
+    def get_name(self):
+        return self.author.name
 
 
 class Comment(models.Model):
