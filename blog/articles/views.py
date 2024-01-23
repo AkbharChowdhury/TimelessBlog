@@ -4,10 +4,12 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse_lazy, reverse
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.http import HttpResponse
 
 from .forms import CreateArticleForm, EditArticleForm, CommentForm, CommentsForm
 from .models import Article, Category, Comment
 
+from django.http import JsonResponse
 
 def CategoryList(request, cats):
     category_slug = cats.replace('-', ' ')
@@ -91,6 +93,14 @@ class ArticleDetails(DetailView):
             self.request.user)
         return article_id
 
+    def like_article_ajax(self, data):
+        article_id = self.request.POST.get('id')
+        article = get_object_or_404(self.model, id=article_id)
+        article.likes.remove(self.request.user) if article.likes.filter(
+            id=self.request.user.id).exists() else article.likes.add(
+            self.request.user)
+        return article_id
+
     def add_comment(self):
         article_id = self.request.POST.get('article')
         name = self.request.POST['name']
@@ -104,12 +114,27 @@ class ArticleDetails(DetailView):
             messages.error(self.request, 'please enter all the required fields')
         return article_id
 
+    def is_ajax(self, request):
+        return request.headers.get('x-requested-with') == 'XMLHttpRequest'
+
     def post(self, request, *args, **kwargs):
+        if self.is_ajax(request):
+
+            like = self.like_article_ajax(request)
+            article_likes = get_object_or_404(self.model, id=self.kwargs['pk'])
+            liked = False if article_likes.likes.filter(id=self.request.user.id).exists() else True
+            context = {
+                'total_likes': article_likes.total_likes(),
+                'liked_icon': 'fa-regular' if liked else 'fa-solid',
+                'liked': liked
+            }
+            return JsonResponse(context)
+
         if 'btn_add_comment' in self.request.POST:
             return HttpResponseRedirect(reverse('article_detail', args=[str(self.add_comment())]))
-        if 'btn_toggle_like' in self.request.POST:
-            like = self.like_article()
-            return HttpResponseRedirect(reverse('article_detail', args=[str(like)]))
+        # if 'btn_toggle_like' in self.request.POST:
+        #     like = self.like_article()
+        #     return HttpResponseRedirect(reverse('article_detail', args=[str(like)]))
 
     def get_context_data(self, *args, **kwargs):
         context = super(self.__class__, self).get_context_data(*args, **kwargs)

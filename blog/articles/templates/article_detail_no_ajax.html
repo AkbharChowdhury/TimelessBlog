@@ -33,12 +33,12 @@
 
                         <button name="btn_toggle_like" id="btn_toggle_like" class="hide-submit-btn" type="submit"
                                 value="{{ article.id }}">
-                            <i class="{{ liked_icon }} fa-heart fa-lg" id="like_icon" aria-hidden="true"></i>
+                            <i class="{{ liked_icon }} fa-heart fa-lg" aria-hidden="true"></i>
                         </button>
                         {% else %}
                         <small class="text-muted">Login to like </small>
                         {% endif %}
-                        <span id="total_likes">{{ total_likes }}</span>
+                        {{ total_likes }}
                     </form>
                     {% if user.is_authenticated and user.id == article.author.id %}
                     <p class="mt-3"><a class="btn btn-outline-primary"
@@ -137,7 +137,7 @@
                         <label for="body">Comments</label>
                     </div>
                     <div class="mt-3">
-                        <button type="submit" name="btn_add_comment" class="btn btn-warning text-capitalize">post comment</button>
+                        <button type="submit" name="btn_add_comment" class="btn btn-warning">post comment</button>
                     </div>
                 </form>
                 <!-- Comment with nested comments-->
@@ -208,5 +208,39 @@
 {% endblock %}
 {% block scripts  %}
 <script src="{% static 'js/commentForm.js' %}"></script>
-<script src="{% static 'js/toggleLlike.js' %}"></script>
+
+<script>
+     // help link: https://www.youtube.com/watch?v=h1fKWxs7A2c
+
+    $(document).ready(function () {
+        $("#like-toggle-form").submit(function (e) {
+            e.preventDefault();
+
+            // alert($("input[name=csrfmiddlewaretoken]").val())
+            $.ajax({
+                url: $('#url').val(),
+                type: "POST",
+                data: {
+                   csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+                    id: $('#id').val()
+
+                },
+                // dataType: "json",
+                success: (data) => {
+                    alert(data.liked_icon)
+                    // console.log(data)
+                },
+                error: (error) => {
+                    console.error(error);
+                }
+            });
+            // var name =  $("#btn_toggle_like")
+            //
+            // alert(name.val())
+
+        });
+    });
+
+
+</script>
 {% endblock  %}
