@@ -11,6 +11,7 @@ from .models import Article, Category, Comment
 
 from django.http import JsonResponse
 
+
 def CategoryList(request, cats):
     category_slug = cats.replace('-', ' ')
     category_slug = Category.objects.filter(name=category_slug)
@@ -85,7 +86,7 @@ class ArticleDetails(DetailView):
     model = Article
     template_name = 'article_detail.html'
 
-    def like_article(self):
+    def toggle_like_article(self):
         article_id = self.request.POST.get('article')
         article = get_object_or_404(self.model, id=article_id)
         article.likes.remove(self.request.user) if article.likes.filter(
@@ -93,13 +94,7 @@ class ArticleDetails(DetailView):
             self.request.user)
         return article_id
 
-    def like_article_ajax(self, data):
-        article_id = self.request.POST.get('id')
-        article = get_object_or_404(self.model, id=article_id)
-        article.likes.remove(self.request.user) if article.likes.filter(
-            id=self.request.user.id).exists() else article.likes.add(
-            self.request.user)
-        return article_id
+
 
     def add_comment(self):
         article_id = self.request.POST.get('article')
@@ -117,18 +112,18 @@ class ArticleDetails(DetailView):
     def is_ajax(self, request):
         return request.headers.get('x-requested-with') == 'XMLHttpRequest'
 
+    def like_data(self, context = {}):
+        article_likes = get_object_or_404(self.model, id=self.kwargs['pk'])
+        liked = False if article_likes.likes.filter(id=self.request.user.id).exists() else True
+        context['total_likes'] = article_likes.total_likes()
+        context['liked_icon'] = 'fa-regular' if liked else 'fa-solid'
+        context['liked'] = liked
+        return context;
+
     def post(self, request, *args, **kwargs):
         if self.is_ajax(request):
-
-            like = self.like_article_ajax(request)
-            article_likes = get_object_or_404(self.model, id=self.kwargs['pk'])
-            liked = False if article_likes.likes.filter(id=self.request.user.id).exists() else True
-            context = {
-                'total_likes': article_likes.total_likes(),
-                'liked_icon': 'fa-regular' if liked else 'fa-solid',
-                'liked': liked
-            }
-            return JsonResponse(context)
+            self.toggle_like_article()
+            return JsonResponse(self.like_data())
 
         if 'btn_add_comment' in self.request.POST:
             return HttpResponseRedirect(reverse('article_detail', args=[str(self.add_comment())]))
@@ -141,9 +136,7 @@ class ArticleDetails(DetailView):
         article_likes = get_object_or_404(self.model, id=self.kwargs['pk'])
         liked = False if article_likes.likes.filter(id=self.request.user.id).exists() else True
         context['category_menu'] = Category.objects.all()
-        context['total_likes'] = article_likes.total_likes()
-        context['liked_icon'] = 'fa-regular' if liked else 'fa-solid'
-        context['liked'] = liked
+        self.like_data(context)
         article = get_object_or_404(self.model, pk=self.kwargs['pk'])
         context['author'] = f'{article.author.first_name} {article.author.last_name}'.title()
         return context

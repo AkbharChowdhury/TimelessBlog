@@ -7,15 +7,15 @@ $(document).ready(function () {
             type: "POST",
             data: {
                 csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
-                id: $('#id').val()
+                article: $('#article').val()
             },
             success: (data) => {
+                console.log(data)
                 $('#total_likes').text(data.total_likes)
                 $('#like_icon').prop('class', `${data.liked_icon} fa-heart fa-lg`)
             },
-            error: (error) => {
-                console.error(error);
-            }
+            error: (e) => console.error(`There was an error with handling this request ${e.message}`)
+
         });
     });
 });
