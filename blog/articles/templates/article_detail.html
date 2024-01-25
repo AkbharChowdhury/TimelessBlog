@@ -137,7 +137,9 @@
                         <label for="body">Comments</label>
                     </div>
                     <div class="mt-3">
-                        <button type="submit" name="btn_add_comment" class="btn btn-warning text-capitalize">post comment</button>
+                        <button type="submit" name="btn_add_comment" class="btn btn-warning text-capitalize">post
+                            comment
+                        </button>
                     </div>
                 </form>
                 <!-- Comment with nested comments-->
@@ -208,5 +210,11 @@
 {% endblock %}
 {% block scripts  %}
 <script src="{% static 'js/commentForm.js' %}"></script>
-<script src="{% static 'js/toggleLlike.js' %}"></script>
+<!--<script src="{% static 'js/toggleLlike.js' %}"></script>-->
+<script src="{% static 'js/async_await_toggle_like.js' %}"></script>
+
+<script>
+
+
+</script>
 {% endblock  %}
