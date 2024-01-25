@@ -123,7 +123,7 @@ class ArticleDetails(DetailView):
         return context;
 
     def post(self, request, *args, **kwargs):
-        if any([self.is_ajax(request), self.is_fetch_request(request)]):
+        if self.is_ajax(request) or self.is_fetch_request(request):
             self.toggle_like_article()
             return JsonResponse(self.like_data())
 

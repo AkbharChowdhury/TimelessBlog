@@ -26,7 +26,7 @@ async function toggleLike(url) {
         });
 
         if (!response.ok) {
-            alert(`There was an error toggling like: ${response.status} - ${response.statusText}`);
+            alert(`There was an error toggling like: ${response.status} - ${response.statusText} ${url}`);
             return
         }
 
