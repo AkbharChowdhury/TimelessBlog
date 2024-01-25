@@ -1,28 +1,35 @@
 window.onload = () => {
     document.querySelector("#like-toggle-form").addEventListener('submit', (e) => {
         e.preventDefault()
-        toggleLike().then(data => {
-            console.log(data)
-            document.querySelector('#total_likes').textContent = data.total_likes
-            document.querySelector('#like_icon').setAttribute('class', `${data.liked_icon} fa-heart fa-lg`)
+        const url = document.getElementById('url').value;
+        toggleLike(url).then(data => {
+            if (data) {
+                document.querySelector('#total_likes').textContent = data.total_likes
+                document.querySelector('#like_icon').setAttribute('class', `${data.liked_icon} fa-heart fa-lg`)
+            }
         })
     })
 }
 
 // https://blog.stackademic.com/understanding-fetch-with-async-await-5289557d623a
-async function toggleLike() {
+async function toggleLike(url) {
     try {
-        const response = await fetch(document.getElementById('url').value, {
+        const response = await fetch(url, {
             method: 'POST',
             body: JSON.stringify({
-                article: document.querySelector('#article').value,
-                csrfmiddlewaretoken: document.querySelector("input[name=csrfmiddlewaretoken]").value,
+                article: document.getElementById('article').value,
             }),
             headers: {
                 "X-CSRFToken": document.querySelector("input[name=csrfmiddlewaretoken]").value,
                 'Content-Type': 'application/json',
             },
         });
+
+        if (!response.ok) {
+            alert(`There was an error toggling like: ${response.status} - ${response.statusText}`);
+            return
+        }
+
         return await response.json();
 
 

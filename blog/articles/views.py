@@ -87,14 +87,13 @@ class ArticleDetails(DetailView):
     template_name = 'article_detail.html'
 
     def toggle_like_article(self):
+        print(self.request.POST)
         article_id = self.request.POST.get('article')
         article = get_object_or_404(self.model, id=article_id)
         article.likes.remove(self.request.user) if article.likes.filter(
             id=self.request.user.id).exists() else article.likes.add(
             self.request.user)
         return article_id
-
-
 
     def add_comment(self):
         article_id = self.request.POST.get('article')
@@ -112,7 +111,10 @@ class ArticleDetails(DetailView):
     def is_ajax(self, request):
         return request.headers.get('x-requested-with') == 'XMLHttpRequest'
 
-    def like_data(self, context = {}):
+    def is_fetch_request(self, request):
+        return request.headers.get('X-Csrftoken') is not None
+
+    def like_data(self, context={}):
         article_likes = get_object_or_404(self.model, id=self.kwargs['pk'])
         liked = False if article_likes.likes.filter(id=self.request.user.id).exists() else True
         context['total_likes'] = article_likes.total_likes()
@@ -121,7 +123,7 @@ class ArticleDetails(DetailView):
         return context;
 
     def post(self, request, *args, **kwargs):
-        if self.is_ajax(request):
+        if any([self.is_ajax(request), self.is_fetch_request(request)]):
             self.toggle_like_article()
             return JsonResponse(self.like_data())
 
