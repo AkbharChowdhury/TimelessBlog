@@ -10,8 +10,16 @@ from .forms import CreateArticleForm, EditArticleForm, CommentForm, CommentsForm
 from .models import Article, Category, Comment
 
 from django.http import JsonResponse
+from dataclasses import dataclass
 
 
+@dataclass
+class MyComment():
+    name: str
+    comment: str
+
+    def is_valid(self):
+        return self.name and self.comment
 def CategoryList(request, cats):
     category_slug = cats.replace('-', ' ')
     category_slug = Category.objects.filter(name=category_slug)
@@ -86,6 +94,7 @@ class ArticleDetails(DetailView):
     id = 'article'
     model = Article
     template_name = 'article_detail.html'
+    comment: Comment = None
 
     def toggle_like_article(self, article_id):
         article = get_object_or_404(self.model, id=article_id)
@@ -98,13 +107,19 @@ class ArticleDetails(DetailView):
         article_id = self.request.POST.get(self.id)
         name = self.request.POST['name']
         body = self.request.POST['body']
-        if name and body is not None:
-            article = get_object_or_404(self.model, pk=article_id)
-            form = Comment(article=article, name=name, body=body)
-            form.save()
-            messages.success(self.request, 'your comment has been saved!')
-        else:
+        self.comment = MyComment(name, body)
+        if not self.comment.is_valid():
             messages.error(self.request, 'please enter all the required fields')
+            context = {
+                'article_id': int(article_id),
+                'comment': self.comment
+            }
+            return context['article_id']
+
+        article = get_object_or_404(self.model, pk=article_id)
+        form = Comment(article=article, name=name, body=body)
+        form.save()
+        messages.success(self.request, 'your comment has been saved!')
         return article_id
 
     def is_ajax(self, request):
@@ -120,6 +135,7 @@ class ArticleDetails(DetailView):
         context['liked_icon'] = 'fa-regular' if liked else 'fa-solid'
         context['liked'] = liked
         return context;
+
     def get_article_id_form_data(self):
         return json.loads(self.request.body.decode('utf-8'))[self.id]
 
@@ -133,7 +149,6 @@ class ArticleDetails(DetailView):
             article_id = self.request.POST.get(self.id) or self.get_article_id_form_data()
             self.toggle_like_article(article_id)
             return JsonResponse(self.like_data())
-            # self.handle_toggle_like()
 
         if 'btn_add_comment' in self.request.POST:
             return HttpResponseRedirect(reverse('article_detail', args=[str(self.add_comment())]))
@@ -149,6 +164,13 @@ class ArticleDetails(DetailView):
         self.like_data(context)
         article = get_object_or_404(self.model, pk=self.kwargs['pk'])
         context['author'] = f'{article.author.first_name} {article.author.last_name}'.title()
+        post_data = self.request.body
+        if self.comment:
+            context['name'] = self.comment.name
+        # print('name' in self.request.POST)
+        # if 'name' in self.request.POST:
+        #     context['name'] = self.request.POST['name'] or 'SA'
+        # context['name'] = self.request.POST['name'] or None
         return context
 
 
