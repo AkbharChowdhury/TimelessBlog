@@ -1,3 +1,5 @@
+// empty queryset solution
+// https://stackoverflow.com/questions/22628850/empty-querydict-in-django
 window.onload = () => {
     document.querySelector("#like-toggle-form").addEventListener('submit', (e) => {
         e.preventDefault()
@@ -24,9 +26,10 @@ async function toggleLike(url) {
                 'Content-Type': 'application/json',
             },
         });
+        console.log(response.ok)
 
         if (!response.ok) {
-            alert(`There was an error toggling like: ${response.status} - ${response.statusText} ${url}`);
+            // alert(`There was an error toggling like: ${response.status} - ${response.statusText} ${url}`);
             return
         }
 

@@ -5,7 +5,7 @@ from django.shortcuts import render, get_object_or_404
 from django.urls import reverse_lazy, reverse
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.http import HttpResponse
-
+import json
 from .forms import CreateArticleForm, EditArticleForm, CommentForm, CommentsForm
 from .models import Article, Category, Comment
 
@@ -83,12 +83,11 @@ class ArticleList(ListView):
 
 
 class ArticleDetails(DetailView):
+    id = 'article'
     model = Article
     template_name = 'article_detail.html'
 
-    def toggle_like_article(self):
-        print(self.request.POST)
-        article_id = self.request.POST.get('article')
+    def toggle_like_article(self, article_id):
         article = get_object_or_404(self.model, id=article_id)
         article.likes.remove(self.request.user) if article.likes.filter(
             id=self.request.user.id).exists() else article.likes.add(
@@ -96,7 +95,7 @@ class ArticleDetails(DetailView):
         return article_id
 
     def add_comment(self):
-        article_id = self.request.POST.get('article')
+        article_id = self.request.POST.get(self.id)
         name = self.request.POST['name']
         body = self.request.POST['body']
         if name and body is not None:
@@ -121,17 +120,26 @@ class ArticleDetails(DetailView):
         context['liked_icon'] = 'fa-regular' if liked else 'fa-solid'
         context['liked'] = liked
         return context;
+    def get_article_id_form_data(self):
+        return json.loads(self.request.body.decode('utf-8'))[self.id]
+
+    def handle_toggle_like(self):
+        article_id = self.request.POST.get(self.__get_article_id()) or self.get_article_id_form_data()
+        self.toggle_like_article(article_id)
+        return JsonResponse(self.like_data())
 
     def post(self, request, *args, **kwargs):
         if self.is_ajax(request) or self.is_fetch_request(request):
-            self.toggle_like_article()
+            article_id = self.request.POST.get(self.id) or self.get_article_id_form_data()
+            self.toggle_like_article(article_id)
             return JsonResponse(self.like_data())
+            # self.handle_toggle_like()
 
         if 'btn_add_comment' in self.request.POST:
             return HttpResponseRedirect(reverse('article_detail', args=[str(self.add_comment())]))
-        # if 'btn_toggle_like' in self.request.POST:
-        #     like = self.like_article()
-        #     return HttpResponseRedirect(reverse('article_detail', args=[str(like)]))
+        if 'btn_toggle_like' in self.request.POST:
+            like = self.like_article()
+            return HttpResponseRedirect(reverse('article_detail', args=[str(like)]))
 
     def get_context_data(self, *args, **kwargs):
         context = super(self.__class__, self).get_context_data(*args, **kwargs)

@@ -10,7 +10,6 @@ $(document).ready(function () {
                 article: $('#article').val()
             },
             success: (data) => {
-
                 $('#total_likes').text(data.total_likes)
                 $('#like_icon').prop('class', `${data.liked_icon} fa-heart fa-lg`)
             },
