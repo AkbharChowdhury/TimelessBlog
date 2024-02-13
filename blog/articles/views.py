@@ -12,14 +12,25 @@ from .models import Article, Category, Comment
 from django.http import JsonResponse
 from dataclasses import dataclass
 
+from django.shortcuts import redirect
+
 
 @dataclass
 class MyComment():
+    article: Article
     name: str
     comment: str
 
+    # def __iter__(self):
+    #     return iter(astuple(self))
+
+    def as_args(self):
+        return (self.article, self.name, self.comment)
+
     def is_valid(self):
         return self.name and self.comment
+
+
 def CategoryList(request, cats):
     category_slug = cats.replace('-', ' ')
     category_slug = Category.objects.filter(name=category_slug)
@@ -107,16 +118,13 @@ class ArticleDetails(DetailView):
         article_id = self.request.POST.get(self.id)
         name = self.request.POST['name']
         body = self.request.POST['body']
-        self.comment = MyComment(name, body)
-        if not self.comment.is_valid():
-            messages.error(self.request, 'please enter all the required fields')
-            context = {
-                'article_id': int(article_id),
-                'comment': self.comment
-            }
-            return context['article_id']
-
         article = get_object_or_404(self.model, pk=article_id)
+        print(type(article), 'is of type')
+        comment = MyComment(article=article, name=name, comment=body)
+        if not comment.is_valid():
+            messages.error(self.request, 'please enter all the required fields')
+            return article_id
+
         form = Comment(article=article, name=name, body=body)
         form.save()
         messages.success(self.request, 'your comment has been saved!')
@@ -151,26 +159,43 @@ class ArticleDetails(DetailView):
             return JsonResponse(self.like_data())
 
         if 'btn_add_comment' in self.request.POST:
-            return HttpResponseRedirect(reverse('article_detail', args=[str(self.add_comment())]))
+            # form = CommentForm()
+            form = CommentForm(request.POST)
+            print(self.request.POST, 'data')
+            # print(form.is_valid())
+            # if form.is_valid():
+            #     print(form.cleaned_data)
+            #     name = form.cleaned_data['name']
+            context = {
+                'form': form,
+                'name': 'hello'
+            }
+            # name = form.cleaned_data['name']
+
+            print('form')
+
+            return HttpResponseRedirect(
+                reverse(self.template_name.split('.')[0],
+                        args=[
+                            str(self.add_comment())
+                        ]))
+
         if 'btn_toggle_like' in self.request.POST:
             like = self.like_article()
             return HttpResponseRedirect(reverse('article_detail', args=[str(like)]))
 
     def get_context_data(self, *args, **kwargs):
         context = super(self.__class__, self).get_context_data(*args, **kwargs)
+        # article_likes = get_object_or_404(self.model, id=self.kwargs['pk'])
         article_likes = get_object_or_404(self.model, id=self.kwargs['pk'])
+        print(self.args)
+
         liked = False if article_likes.likes.filter(id=self.request.user.id).exists() else True
         context['category_menu'] = Category.objects.all()
         self.like_data(context)
         article = get_object_or_404(self.model, pk=self.kwargs['pk'])
         context['author'] = f'{article.author.first_name} {article.author.last_name}'.title()
         post_data = self.request.body
-        if self.comment:
-            context['name'] = self.comment.name
-        # print('name' in self.request.POST)
-        # if 'name' in self.request.POST:
-        #     context['name'] = self.request.POST['name'] or 'SA'
-        # context['name'] = self.request.POST['name'] or None
         return context
 
 
